@@ -1,13 +1,13 @@
 [package]
-authors = ['Connesis Technology <hi@connesis.com>']
-build = 'build.rs'
-description = 'Banana Node '
-edition = '2018'
-homepage = 'https://connesis.com'
-license = 'Apache-2.0'
-name = 'node-banana'
-repository = ''
-version = '0.1.0'
+name = "banana-node"
+version = "0.1.0-dev"
+authors = ["Francis Hor <francishor@outlook.com>"]
+description = "Substrate Banana Chain"
+edition = "2018"
+license = "Apache-2.0"
+build = "build.rs"
+homepage = "https://connesis.com"
+repository = ""
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]
@@ -16,8 +16,8 @@ targets = ["x86_64-unknown-linux-gnu"]
 futures = "0.3.4"
 log = "0.4.8"
 structopt = "0.3.8"
-parking_lot = "0.10.0"
 jsonrpc-core = "14.0.3"
+serde_json = "1.0"
 
 sp-api = { version = "2.0.0-dev", path = "../vendor/frontier/vendor/substrate/primitives/api" }
 sp-blockchain = { version = "2.0.0-dev", path = "../vendor/frontier/vendor/substrate/primitives/blockchain" }
@@ -48,7 +48,8 @@ sp-runtime = { version = "2.0.0-dev", path = "../vendor/frontier/vendor/substrat
 sc-basic-authorship = { path = "../vendor/frontier/vendor/substrate/client/basic-authorship" }
 sp-block-builder = { path = "../vendor/frontier/vendor/substrate/primitives/block-builder" }
 
-banana-runtime = { path = "../runtime" }
+frontier-consensus = { version = "0.1.0", path = "../vendor/frontier/consensus" }
+banana-runtime = { version = "0.1.0-dev", path = "../runtime" }
 frontier-rpc = { version = "0.1.0", path = "../vendor/frontier/rpc" }
 frontier-rpc-primitives = { version = "0.1.0", path = "../vendor/frontier/rpc/primitives" }
 

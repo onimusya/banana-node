@@ -1,19 +1,34 @@
+// This file is part of Frontier.
+
+// Copyright (C) 2019-2020 Parity Technologies (UK) Ltd.
+// SPDX-License-Identifier: Apache-2.0
+
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// 	http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 //! A collection of node-specific RPC methods.
 
 use std::{sync::Arc, fmt};
 
 use sc_consensus_manual_seal::rpc::{ManualSeal, ManualSealApi};
-use banana_runtime::{Hash, AccountId, Index, opaque::Block, Balance, UncheckedExtrinsic};
+use banana_runtime::{Hash, AccountId, Index, opaque::Block, Balance};
 use sp_api::ProvideRuntimeApi;
 use sp_transaction_pool::TransactionPool;
 use sp_blockchain::{Error as BlockChainError, HeaderMetadata, HeaderBackend};
 use sp_consensus::SelectChain;
 use sc_rpc_api::DenyUnsafe;
-use sc_client_api::backend::{StorageProvider, Backend, StateBackend};
+use sc_client_api::backend::{StorageProvider, Backend, StateBackend, AuxStore};
 use sp_runtime::traits::BlakeTwo256;
 use sp_block_builder::BlockBuilder;
-
-pub type IoHandler = jsonrpc_core::IoHandler<sc_rpc::Metadata>;
 
 /// Light client extra dependencies.
 pub struct LightDeps<C, F, P> {
@@ -49,13 +64,13 @@ pub fn create_full<C, P, M, SC, BE>(
 ) -> jsonrpc_core::IoHandler<M> where
 	BE: Backend<Block> + 'static,
 	BE::State: StateBackend<BlakeTwo256>,
-	C: ProvideRuntimeApi<Block> + StorageProvider<Block, BE>,
+	C: ProvideRuntimeApi<Block> + StorageProvider<Block, BE> + AuxStore,
 	C: HeaderBackend<Block> + HeaderMetadata<Block, Error=BlockChainError> + 'static,
 	C: Send + Sync + 'static,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Index>,
 	C::Api: BlockBuilder<Block>,
-	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance, UncheckedExtrinsic>,
-	C::Api: frontier_rpc_primitives::EthereumRuntimeApi<Block>,
+	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
+	C::Api: frontier_rpc_primitives::EthereumRuntimeRPCApi<Block>,
 	<C::Api as sp_api::ApiErrorExt>::Error: fmt::Debug,
 	P: TransactionPool<Block=Block> + 'static,
 	M: jsonrpc_core::Metadata + Default,
