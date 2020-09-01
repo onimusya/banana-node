@@ -3,7 +3,7 @@
 /// Money matters.
 pub mod currency {
 
-	pub type Balance = u128;
+	use banana_primitives::Balance;
 
 	pub const MILLICENTS: Balance = 10_000_000_000_000;
 	pub const CENTS: Balance = 1_000 * MILLICENTS; // assume this is worth about a cent.
@@ -12,14 +12,18 @@ pub mod currency {
 	pub const MILLIBANA: Balance = MILLICENTS;
 	pub const CENTIBANA: Balance = 1_000 * MILLIBANA;
 	pub const BANA: Balance = 100 * CENTIBANA;
+
+	pub const fn deposit(items: u32, bytes: u32) -> Balance {
+		items as Balance * 15 * CENTS + (bytes as Balance) * 6 * CENTS
+	}
+
 }
 
 
 /// Time.
 pub mod time {
 
-	pub type BlockNumber = u32;
-	pub type Moment = u64;
+	use banana_primitives::{Moment, BlockNumber};
 
 	/// Since BABE is probabilistic this is the average expected block time that
 	/// we are targetting. Blocks will be produced at a minimum duration defined
@@ -48,7 +52,7 @@ pub mod time {
 
 	// Sessions are set low (1 per minute) for debugging purposes. Should be HOURS
 	// As a block is produced every 3 seconds by configuration, a new session will occur every X blocks.
-	pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 1 * MINUTES;
+	pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10 * MINUTES;
 	pub const EPOCH_DURATION_IN_SLOTS: u64 = {
 		const SLOT_FILL_RATE: f64 = MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
 
