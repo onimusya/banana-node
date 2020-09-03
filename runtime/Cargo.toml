@@ -73,6 +73,7 @@ voting = { package = "edge-voting", path = "../modules/edge-voting", default-fea
 banana-primitives = { path = "../primitives", default-features = false }
 
 pallet-banana = { path = "../pallets/pallet-banana", default-features = false }
+validator-set = { path = "../pallets/validator-set", default-features = false }
 
 [build-dependencies]
 wasm-builder-runner = { version = "1.0.5", package = "substrate-wasm-builder-runner", path = "../vendor/frontier/vendor/substrate/utils/wasm-builder-runner" }
@@ -133,5 +134,6 @@ std = [
 	"treasury-reward/std",
 	"voting/std",
 	"pallet-banana/std",
+	"validator-set/std",
 
 ]
