@@ -317,6 +317,10 @@ impl frame_ethereum::Trait for Runtime {
 	type FindAuthor = EthereumFindAuthor<Aura>;
 }
 
+impl pallet_banana::Trait for Runtime {
+	type Event = Event;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -334,6 +338,7 @@ construct_runtime!(
 		Sudo: pallet_sudo::{Module, Call, Config<T>, Storage, Event<T>},
 		Ethereum: frame_ethereum::{Module, Call, Storage, Event, Config, ValidateUnsigned},
 		EVM: frame_evm::{Module, Config, Call, Storage, Event<T>},
+		PalletBanana: pallet_banana::{Module, Call, Storage, Event<T>},
 	}
 );
 
