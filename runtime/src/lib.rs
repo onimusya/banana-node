@@ -14,7 +14,7 @@ use codec::{Encode, Decode};
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata, U256, H160, H256};
 use sp_runtime::{
 	ApplyExtrinsicResult, generic, create_runtime_str, impl_opaque_keys, MultiSignature,
-	transaction_validity::{TransactionValidity, TransactionSource}, 
+	transaction_validity::{TransactionValidity, TransactionSource, TransactionPriority}, 
 };
 use sp_runtime::traits::{
 	BlakeTwo256, Block as BlockT, IdentityLookup, Verify, IdentifyAccount, NumberFor, Saturating, OpaqueKeys,
@@ -47,6 +47,9 @@ use frame_ethereum::{Block as EthereumBlock, Transaction as EthereumTransaction,
 use frame_evm::{Account as EVMAccount, FeeCalculator, HashedAddressMapping, EnsureAddressTruncated};
 use frontier_rpc_primitives::{TransactionStatus};
 
+// Extra stuffs
+pub use pallet_im_online::ed25519::AuthorityId as ImOnlineId;
+
 /// Banana Node Customs
 pub mod constants; //
 use constants::{time::*, currency::*}; //
@@ -56,6 +59,9 @@ pub use banana_primitives::{
 };
 
 pub use validator_set;
+
+/// Importing the contracts Schedule type.
+pub use contracts::Schedule as ContractsSchedule;
 
 /// Declarations under banana_primitives
 //pub type BlockNumber = u32;
@@ -103,6 +109,7 @@ pub mod opaque {
 		pub struct SessionKeys {
 			pub aura: Aura,
 			pub grandpa: Grandpa,
+			//pub im_online: ImOnline,
 		}
 	}
 }
@@ -340,6 +347,66 @@ impl pallet_session::Trait for Runtime {
 	type WeightInfo = ();
 }
 
+parameter_types! {
+    pub const TombstoneDeposit: Balance = 16 * MILLICENTS;
+    pub const RentByteFee: Balance = 4 * MILLICENTS;
+    pub const RentDepositOffset: Balance = 1000 * MILLICENTS;
+    pub const SurchargeReward: Balance = 150 * MILLICENTS;
+}
+
+impl contracts::Trait for Runtime {
+    type Time = Timestamp;
+    type Randomness = RandomnessCollectiveFlip;
+    type Currency = Balances;
+    type Event = Event;
+    type DetermineContractAddress = contracts::SimpleAddressDeterminer<Runtime>;
+    type TrieIdGenerator = contracts::TrieIdFromParentCounter<Runtime>;
+    type RentPayment = ();
+    type SignedClaimHandicap = contracts::DefaultSignedClaimHandicap;
+    type TombstoneDeposit = TombstoneDeposit;
+    type StorageSizeOffset = contracts::DefaultStorageSizeOffset;
+    type RentByteFee = RentByteFee;
+    type RentDepositOffset = RentDepositOffset;
+    type SurchargeReward = SurchargeReward;
+    type MaxDepth = contracts::DefaultMaxDepth;
+    type MaxValueSize = contracts::DefaultMaxValueSize;
+    type WeightPrice = pallet_transaction_payment::Module<Self>;
+}
+
+// Extra Stuffs
+parameter_types! {
+	pub const CouncilMotionDuration: BlockNumber = 14 * DAYS;
+	pub const CouncilMaxProposals: u32 = 100;
+}
+
+type CouncilCollective = pallet_collective::Instance1;
+impl pallet_collective::Trait<CouncilCollective> for Runtime {
+	type Origin = Origin;
+	type Proposal = Call;
+	type Event = Event;
+	type MotionDuration = CouncilMotionDuration;
+	type MaxProposals = CouncilMaxProposals;
+	type WeightInfo = ();
+}
+
+parameter_types! {
+	pub const SessionDuration: BlockNumber = EPOCH_DURATION_IN_SLOTS as _;
+	pub const ImOnlineUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
+	/// We prioritize im-online heartbeats over phragmen solution submission.
+	pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
+}
+
+/*
+impl pallet_im_online::Trait for Runtime {
+	type AuthorityId = ImOnlineId;
+	type Event = Event;
+	type SessionDuration = SessionDuration;
+	type ReportUnresponsiveness = {};
+	type UnsignedPriority = ImOnlineUnsignedPriority;
+}
+*/
+
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -356,9 +423,17 @@ construct_runtime!(
 		Grandpa: pallet_grandpa::{Module, Call, Storage, Config, Event},
 		Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
 		TransactionPayment: pallet_transaction_payment::{Module, Storage},
+		
 		Sudo: pallet_sudo::{Module, Call, Config<T>, Storage, Event<T>},
+		Council: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
+
+		//ImOnline: pallet_im_online::{Module, Call, Storage, Event<T>, ValidateUnsigned, Config<T>}, // Extra
+		
 		Ethereum: frame_ethereum::{Module, Call, Storage, Event, Config, ValidateUnsigned},
 		EVM: frame_evm::{Module, Config, Call, Storage, Event<T>},
+		
+		Contracts: contracts::{Module, Call, Config, Storage, Event<T>},
+		
 		PalletBanana: pallet_banana::{Module, Call, Storage, Event<T>},
 	}
 );

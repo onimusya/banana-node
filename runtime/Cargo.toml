@@ -69,6 +69,9 @@ signaling = { package = "edge-signaling", path = "../modules/edge-signaling", de
 treasury-reward = { package = "edge-treasury-reward", path = "../modules/edge-treasury-reward", default-features = false }
 voting = { package = "edge-voting", path = "../modules/edge-voting", default-features = false }
 
+contracts = { version = "2.0.0-dev", default-features = false, package = "pallet-contracts", path = "../vendor/frontier/vendor/substrate/frame/contracts" }
+contracts-primitives = { version = "2.0.0-dev", default-features = false, package = "pallet-contracts-primitives", path = "../vendor/frontier/vendor/substrate/frame/contracts/common" }
+
 # banana primitives
 banana-primitives = { path = "../primitives", default-features = false }
 
@@ -135,5 +138,7 @@ std = [
 	"voting/std",
 	"pallet-banana/std",
 	"validator-set/std",
+	"contracts/std",
+	"contracts-primitives/std"
 
 ]

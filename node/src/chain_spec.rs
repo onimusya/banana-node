@@ -2,8 +2,8 @@
 use sp_core::{Pair, Public, sr25519};
 use banana_runtime::{
 	AccountId, AuraConfig, BalancesConfig, EVMConfig, EthereumConfig, GenesisConfig, GrandpaConfig,
-	SudoConfig, SystemConfig, WASM_BINARY, Signature, ValidatorSetConfig, SessionConfig, 
-	opaque::SessionKeys
+	SudoConfig, SystemConfig, WASM_BINARY, Signature, ValidatorSetConfig, SessionConfig, CouncilConfig,
+	opaque::SessionKeys, ContractsConfig, ContractsSchedule
 };
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
@@ -151,7 +151,7 @@ fn testnet_genesis(
 	initial_authorities: Vec<(AccountId, AuraId, GrandpaId)>,
 	root_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
-	_enable_println: bool,
+	enable_println: bool,
 ) -> GenesisConfig {
 	GenesisConfig {
 		frame_system: Some(SystemConfig {
@@ -193,5 +193,22 @@ fn testnet_genesis(
 			accounts: BTreeMap::new(),
 		}),
 		frame_ethereum: Some(EthereumConfig {}),
+
+		pallet_collective_Instance1: Some(CouncilConfig {
+			members: 			vec![
+				get_account_id_from_seed::<sr25519::Public>("Alice"),
+				get_account_id_from_seed::<sr25519::Public>("Bob"),
+				get_account_id_from_seed::<sr25519::Public>("Charlie"),
+			],
+			phantom: Default::default(),
+		}),
+
+        contracts: Some(ContractsConfig {
+            current_schedule: ContractsSchedule {
+					enable_println,
+                    ..Default::default()
+            },
+        }),		
+
 	}
 }
